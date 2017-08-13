@@ -8,9 +8,9 @@ import lineDef from './line.vue'
 const Line = Vue.extend(lineDef)
 import * as utils from './utils'
 import lineLayout from './layouts/line-layout'
+// import lineLayout2 from './layouts/line-layout2'
 
 // Mind Map Vue MixIn
-
 export const MindMapMixIn = {
     data(){
         return {
@@ -19,6 +19,7 @@ export const MindMapMixIn = {
             mindmapData: {  }, // Not maintained after initialization
             mindmap: {  }, // After Interpolation
             lines: [ ], // Vue instances
+            activeNode: null,
         }
     },
     computed: {
@@ -26,29 +27,31 @@ export const MindMapMixIn = {
             return getNodes(this.mindmap)
         }
     },
+    mounted(){
+        this.bindKeys()
+    },
     methods: {
         draw(){
-            this.drawSVG = SVG(this.rootId).size(3000, 3000)
+            this.drawSVG = SVG(this.rootId)
             this.redraw()
         },
         redraw(){
             document.getElementById(this.rootId).innerHTML=""
             // Replace Nodes Into Vue Instance
-            this.mindmap = interpolateNodes(this.mindmapData)
+            this.mindmap = interpolateNodes(this.mindmapData, this)
             // Assign Coordinates And Other Stuff
             rightLayout(this.mindmap)
             // Assign Lines
-            this.lines = interpolateLines(this.mindmap)
+            this.lines = interpolateLines(this.mindmap, this)
             // Assign layout
             lineLayout(this.mindmap, this.lines)
             // Try to use insertNode API Only?
+            this.updateFrame()
             this.drawNodes()
             this.drawLines()
         },
         drawNodes(){
             this.nodes.map((node)=>{
-                // Assign Parent So Node And Mindmap Can Talk To Each Other.
-                node.$parent = this
                 // Append Node
                 this.$el.appendChild(node.$el)
             })
@@ -65,21 +68,37 @@ export const MindMapMixIn = {
             lineLayout(this.mindmap, this.lines)
         },
         updateFrame(){
-
+            this.drawSVG = SVG(this.rootId).size(this.mindmap.totalWidth, this.mindmap.totalHeight)
         },
-        nodeClick(rootNode){
-            this.insertNode(rootNode)
+        bindKeys(){
+            window.addEventListener("keydown", (evt)=>{
+                evt.preventDefault()
+                if(evt.key === "Tab"){
+                    this.insertChild(this.activeNode)
+                }
+                if(evt.key === "Enter"){
+                    this.insertSibling()
+                }
+                if(evt.key === "Backspace"){
+                    this.removeNode()
+                }
+            })
         },
-        insertNode(rootNode, data){
+        nodeClick(node){
+            this.activeNode = node
+        },
+        insertChild(parentNode, data){
             let newNode = new Node({
                 data: {
                     id: "#"+this.nodes.length,
                     title: "Node #"+this.nodes.length,
-                    children: []
+                    children: [],
+                    parent: this
                 }
-            }).$mount()
+            })
             newNode.$parent = this
-            let parentNode = searchNodeById(this.mindmap, rootNode.id)
+            newNode.$mount()
+
             parentNode.children.push(newNode)
             this.$el.appendChild(newNode.$el)
 
@@ -96,14 +115,24 @@ export const MindMapMixIn = {
             this.updateNodes()
             this.updateLines()
             this.updateFrame()
-            // Use redraw
-            // let parentNode = searchNodeById(this.mindmapData, rootNode.id)
-            // parentNode.children.push({
-            //     id: "#"+this.nodes.length,
-            //     title: "Node #"+this.nodes.length,
-            //     children: []
-            // })
-            // this.redraw()
+            this.activeNode = newNode
+        },
+        removeNode(){
+            // Remove Routing 
+            let parentNode = getParentNode(this.mindmap, this.activeNode)
+            // Remove From Parent
+            let index = parentNode.children.indexOf(this.activeNode)
+            parentNode.children.splice(index, 1)
+            // Set New Active Node
+            // Destroy Recursively
+            this.activeNode.$destroy()
+            // Update Layout
+            this.activeNode = parentNode
+            this.updateNodes()
+        },
+        insertSibling(){
+            let parentNode = getParentNode(this.mindmap, this.activeNode)
+            parentNode ? this.insertChild(parentNode) : null
         }
     }
 }
@@ -123,6 +152,20 @@ function getNodes(mindmap){
     return result
 }
 
+function getParentNode(root, node){
+    if(!root) return null
+    if(root.children.indexOf(node) >= 0){
+        return root
+    }
+    for(let child of root.children){
+        let foundParent = getParentNode(child, node)
+        if(foundParent){
+            return foundParent
+        }
+    }
+    return null
+}
+
 // Make a mindmap class maybe?
 function searchNodeById(root, id){
     if(!root) return null
@@ -138,7 +181,7 @@ function searchNodeById(root, id){
     return null
 }
 
-function interpolateNodes(mindmapData){
+function interpolateNodes(mindmapData, parent){
     function interpolate(rootNode){
         if(!rootNode) return
         rootNode.children = rootNode.children.map((child)=>interpolate(child))
@@ -148,7 +191,9 @@ function interpolateNodes(mindmapData){
                 title: rootNode.title,
                 children: rootNode.children
             }
-        }).$mount()
+        })
+        node.$parent = parent
+        node.$mount()
         return node
     }
     let interpolated = interpolate(mindmapData)
@@ -156,7 +201,7 @@ function interpolateNodes(mindmapData){
 }
 
 
-function interpolateLines(mindmap){
+function interpolateLines(mindmap, parent){
     let result = []
     helper(mindmap)
     function helper(node){
@@ -164,13 +209,14 @@ function interpolateLines(mindmap){
         for(let i=0; i<node.children.length; i++){
             let child = node.children[i]
             helper(child)
-            result.push(
-                new Line({
-                    data: {
-                        id: utils.getLineId(node, child),
-                    }
-                }).$mount()
-            )
+            let line = new Line({
+                data: {
+                    id: utils.getLineId(node, child),
+                }
+            })
+            line.$parent = parent
+            line.$mount()
+            result.push(line)
         }
     }
     return result

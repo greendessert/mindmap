@@ -3,11 +3,12 @@ export default function rightLayout(mindmap){
     let marginRight = 50
     let marginBottom = 50
     let mapRoot = mindmap
-    // let mapRoot = _.cloneDeep(mindmap)
     
     assignHeights(mapRoot)
+    assignWidth(mapRoot)
     assignLevel(mapRoot)
     assignCoordinates(mapRoot)
+    
     function assignHeights(root){
         let blockHeight = root.height || 100
         root.height = root.height || blockHeight
@@ -15,15 +16,29 @@ export default function rightLayout(mindmap){
             root.totalHeight = blockHeight
             return blockHeight
         }
-        root.totalHeight = root.children.reduce((prev, curr, index) => {
-            return prev + assignHeights(curr)
+        root.totalHeight = root.children.reduce((prev, child, index) => {
+            return prev + assignHeights(child)
         }, 0)
         return root.totalHeight
     }
 
     function assignWidth(root){
         let blockWidth = root.width || 100
-        
+        root.width = root.width || blockWidth
+        if(!root.children || !root.children.length){
+            root.totalWidth = blockWidth
+            return blockWidth
+        }
+        let childWidth = root.children.reduce((prev, child, index) => {
+            let childWidth = assignWidth(child)
+            if(childWidth > prev) {
+                return childWidth
+            } else {
+                return prev
+            }
+        }, 0)
+        root.totalWidth = root.width + childWidth + marginRight
+        return root.totalWidth
     }
 
     function assignCoordinates(root, offsetX=0, offsetY=0){
