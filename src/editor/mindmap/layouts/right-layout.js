@@ -1,4 +1,6 @@
-// Mindmap should be vue nodes? So that block width and block height can be exact
+// Mindmap should be vue nodes with lines assigned already
+import * as _ from 'lodash'
+import * as utils from '../utils'
 export default function rightLayout(mindmap){
     let marginRight = 50
     let marginBottom = 50
@@ -6,7 +8,7 @@ export default function rightLayout(mindmap){
     
     assignHeights(mapRoot)
     assignWidth(mapRoot)
-    assignLevel(mapRoot)
+    // assignLevel(mapRoot)
     assignCoordinates(mapRoot)
     
     function assignHeights(root){
@@ -41,29 +43,6 @@ export default function rightLayout(mindmap){
         return root.totalWidth
     }
 
-    function assignCoordinates(root, offsetX=0, offsetY=0){
-        let blockWidth = root.width || 100
-        root.width = root.width || blockWidth
-        root.x = offsetX
-        if(root.children.length>=2){
-            let topNodeHeight = root.children[0].totalHeight
-            , bottomNodeHeight = root.children[root.children.length-1].totalHeight
-            , heightBetween = 0
-            for(let i=1; i<root.children.length-1; i++){
-                heightBetween+=root.children[i].totalHeight
-            }
-            let localOffset = ((topNodeHeight/2) + heightBetween + (bottomNodeHeight/2))/2 + (topNodeHeight/2)
-            root.y = offsetY + localOffset - (blockWidth/2)     
-        } else {
-            root.y = offsetY + (root.totalHeight/2) - (blockWidth/2)
-        }
-        if(!root.children || !root.children.length) return
-        root.children.reduce((prev, curr, index) => {
-            assignCoordinates(curr, offsetX + blockWidth + marginRight, offsetY + prev)
-            return prev + curr.totalHeight
-        }, 0)
-    }
-
     function assignLevel(root){
         breathFirst(root)
         function breathFirst(root){
@@ -87,5 +66,38 @@ export default function rightLayout(mindmap){
             }
         }
     }
+
+    function assignCoordinates(root, offsetX=0, offsetY=0){
+        let blockWidth = root.width || 100
+        root.width = root.width || blockWidth
+        root.x = offsetX
+        if(root.children.length>=2){
+            let topNodeHeight = root.children[0].totalHeight
+            , bottomNodeHeight = root.children[root.children.length-1].totalHeight
+            , heightBetween = 0
+            for(let i=1; i<root.children.length-1; i++){
+                heightBetween+=root.children[i].totalHeight
+            }
+            let localOffset = ((topNodeHeight/2) + heightBetween + (bottomNodeHeight/2))/2 + (topNodeHeight/2)
+            root.y = offsetY + localOffset - (blockWidth/2)     
+        } else {
+            root.y = offsetY + (root.totalHeight/2) - (blockWidth/2)
+        }
+        if(!root.children || !root.children.length) return
+        root.children.reduce((heightSum, child) => {
+            assignCoordinates(child, offsetX + blockWidth + marginRight, offsetY + heightSum)
+
+            // Assign Line Coordinates
+            let line = _.find(root.lines, {id: utils.getLineId(root, child)})
+            line.x1 = root.x + root.width
+            line.y1 = root.y + (root.height/2)
+            line.x2 = child.x
+            line.y2 = child.y + (child.height/2)
+            line.layoutUpdated()
+
+            return heightSum + child.totalHeight
+        }, 0)
+    }
+
     return mapRoot
 }

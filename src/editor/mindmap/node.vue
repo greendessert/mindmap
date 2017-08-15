@@ -6,6 +6,8 @@
 </template>
 
 <script>
+    import * as utils from './utils'
+    import * as _ from 'lodash'
     export default {
         data(){
             return {
@@ -16,6 +18,7 @@
                 y: 0,
                 totalHeight: 0,
                 totalWidth: 0,
+                lines: [],
             }
         },
         computed: {
@@ -51,6 +54,7 @@
         mounted(){
         },
         beforeDestroy(){
+            this.lines.forEach((line)=>line.$destroy())
             this.children.forEach((child)=>child.$destroy())
             this.$parent.$el.removeChild(this.$el)
         },
@@ -58,6 +62,17 @@
             click(){
                 console.log(`Clicked On ${this.id}`)
                 this.$parent.nodeClick(this)
+            },
+            deleteChild(child){
+                let index = this.children.indexOf(child)
+                this.children.splice(index, 1)
+
+                let lineId = utils.getLineId(this, child)
+                let lineIndex = _.findIndex(this.lines, {id: lineId})
+                let line = this.lines.splice(lineIndex, 1)[0]
+                
+                child.$destroy()
+                line.$destroy()
             }
         }
     }
@@ -77,11 +92,11 @@
         }
     }
     rect {
-        transition: transform 0.3s ease-in-out;
+        transition: transform 0.3s;
     }
 
     text {
-        transition: transform 0.3s ease-in-out;
+        transition: transform 0.3s;
     }
 
 }

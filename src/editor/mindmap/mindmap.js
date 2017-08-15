@@ -7,8 +7,6 @@ const Node = Vue.extend(nodeDef)
 import lineDef from './line.vue'
 const Line = Vue.extend(lineDef)
 import * as utils from './utils'
-import lineLayout from './layouts/line-layout'
-// import lineLayout2 from './layouts/line-layout2'
 
 // Mind Map Vue MixIn
 export const MindMapMixIn = {
@@ -23,8 +21,11 @@ export const MindMapMixIn = {
         }
     },
     computed: {
-        nodes(){ //Change to nodes
+        nodes(){
             return getNodes(this.mindmap)
+        },
+        lines2(){
+            return getLines(this.mindmap)
         }
     },
     mounted(){
@@ -37,35 +38,31 @@ export const MindMapMixIn = {
         },
         redraw(){
             document.getElementById(this.rootId).innerHTML=""
-            // Replace Nodes Into Vue Instance
+
             this.mindmap = interpolateNodes(this.mindmapData, this)
-            // Assign Coordinates And Other Stuff
-            rightLayout(this.mindmap)
-            // Assign Lines
             this.lines = interpolateLines(this.mindmap, this)
-            // Assign layout
-            lineLayout(this.mindmap, this.lines)
-            // Try to use insertNode API Only?
+
+            rightLayout(this.mindmap)
+            // lineLayout(this.mindmap)
+
             this.updateFrame()
             this.drawNodes()
             this.drawLines()
         },
         drawNodes(){
-            this.nodes.map((node)=>{
-                // Append Node
+            for(let node of this.nodes){
+                !node.$el ? node.$mount() : null
                 this.$el.appendChild(node.$el)
-            })
+            }
         },
-        updateNodes(){
+        updateLayout(){
             rightLayout(this.mindmap)
         },
         drawLines(){
             for(let line of this.lines){
+                !line.$el ? line.$mount() : null
                 this.$el.appendChild(line.$el)
             }
-        },
-        updateLines(){
-            lineLayout(this.mindmap, this.lines)
         },
         updateFrame(){
             this.drawSVG = SVG(this.rootId).size(this.mindmap.totalWidth, this.mindmap.totalHeight)
@@ -88,7 +85,7 @@ export const MindMapMixIn = {
             this.activeNode = node
         },
         insertChild(parentNode, data){
-            let newNode = new Node({
+            let newChildNode = new Node({
                 data: {
                     id: "#"+this.nodes.length,
                     title: "Node #"+this.nodes.length,
@@ -96,39 +93,36 @@ export const MindMapMixIn = {
                     parent: this
                 }
             })
-            newNode.$parent = this
-            newNode.$mount()
+            newChildNode.$parent = this
+            parentNode.children.push(newChildNode)
 
-            parentNode.children.push(newNode)
-            this.$el.appendChild(newNode.$el)
-
-            // Change Name To Parent Node?
             let newLine = new Line({
                 data: {
-                    id: utils.getLineId(parentNode, newNode)
+                    id: utils.getLineId(parentNode, newChildNode)
                 }
-            }).$mount()
+            })
             newLine.$parent = this
-            this.lines.push(newLine)
+            parentNode.lines.push(newLine)
+            
+            this.activeNode = newChildNode
+
+            this.updateLayout()
+            this.updateFrame()
+
+            newChildNode.$mount()
+            newLine.$mount()
+
+            this.$el.appendChild(newChildNode.$el)
             this.$el.appendChild(newLine.$el)
 
-            this.updateNodes()
-            this.updateLines()
-            this.updateFrame()
-            this.activeNode = newNode
         },
         removeNode(){
-            // Remove Routing 
             let parentNode = getParentNode(this.mindmap, this.activeNode)
-            // Remove From Parent
-            let index = parentNode.children.indexOf(this.activeNode)
-            parentNode.children.splice(index, 1)
-            // Set New Active Node
-            // Destroy Recursively
-            this.activeNode.$destroy()
-            // Update Layout
+            parentNode.deleteChild(this.activeNode)
             this.activeNode = parentNode
-            this.updateNodes()
+
+            this.updateLayout()
+            this.updateFrame()
         },
         insertSibling(){
             let parentNode = getParentNode(this.mindmap, this.activeNode)
@@ -150,6 +144,20 @@ function getNodes(mindmap){
         }
     }
     return result
+}
+
+function getLines(mindmap){
+    let lines = []
+    helper(mindmap)
+    function helper(node){
+        if(!node) return
+        lines.push(...node.children)
+        if(!node.children) return
+        for(let i=0; i<node.children.length; i++){
+            helper(node.children[i])
+        }
+    }
+    return lines
 }
 
 function getParentNode(root, node){
@@ -193,7 +201,6 @@ function interpolateNodes(mindmapData, parent){
             }
         })
         node.$parent = parent
-        node.$mount()
         return node
     }
     let interpolated = interpolate(mindmapData)
@@ -215,7 +222,7 @@ function interpolateLines(mindmap, parent){
                 }
             })
             line.$parent = parent
-            line.$mount()
+            node.lines.push(line)
             result.push(line)
         }
     }
