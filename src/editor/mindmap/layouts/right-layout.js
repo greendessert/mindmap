@@ -83,7 +83,10 @@ export default function rightLayout(mindmap){
         } else {
             root.y = offsetY + (root.totalHeight/2) - (blockWidth/2)
         }
-        if(!root.children || !root.children.length) return
+        if(!root.children || !root.children.length) {
+            root.layoutUpdated()
+            return
+        }
         root.children.reduce((heightSum, child) => {
             assignCoordinates(child, offsetX + blockWidth + marginRight, offsetY + heightSum)
 
@@ -93,11 +96,15 @@ export default function rightLayout(mindmap){
             line.y1 = root.y + (root.height/2)
             line.x2 = child.x
             line.y2 = child.y + (child.height/2)
-            line.layoutUpdated()
+            line.parentNode = root
+            line.childNode = root
 
+            line.layoutUpdated()
+            
             return heightSum + child.totalHeight
         }, 0)
+        root.layoutUpdated()
     }
-
+    
     return mapRoot
 }

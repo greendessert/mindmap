@@ -23,9 +23,6 @@ export const MindMapMixIn = {
     computed: {
         nodes(){
             return getNodes(this.mindmap)
-        },
-        lines2(){
-            return getLines(this.mindmap)
         }
     },
     mounted(){
@@ -87,7 +84,7 @@ export const MindMapMixIn = {
         insertChild(parentNode, data){
             let newChildNode = new Node({
                 data: {
-                    id: "#"+this.nodes.length,
+                    id: `node-${_.uniqueId()}`,
                     title: "Node #"+this.nodes.length,
                     children: [],
                     parent: this
@@ -105,13 +102,13 @@ export const MindMapMixIn = {
             parentNode.lines.push(newLine)
             
             this.activeNode = newChildNode
-
+            
             this.updateLayout()
             this.updateFrame()
-
+            
             newChildNode.$mount()
             newLine.$mount()
-
+            
             this.$el.appendChild(newChildNode.$el)
             this.$el.appendChild(newLine.$el)
 
@@ -133,7 +130,7 @@ export const MindMapMixIn = {
 
 // Return Array Of Nodes
 function getNodes(mindmap){
-    let result = []
+    let result = [mindmap]
     helper(mindmap)
     function helper(node){
         if(!node) return

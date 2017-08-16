@@ -1,34 +1,34 @@
 var minmapData = {
-    id: "1",
+    id: "n-1",
     title: "RootTopic",
     children: [
         {
-            id: "2",
+            id: "n-2",
             title: "Child1",
             children: []
         },
         {
-            id: "3",
+            id: "n-3",
             title: "Child2",
             children: [
                 {
-                    id: "4",
+                    id: "n-4",
                     title: "Child",
                     children: []
                 },
                 {
-                    id: "5",
+                    id: "n-5",
                     title: "Child",
                     children: [
                         {
-                            id: "7",
+                            id: "n-7",
                             title: "Child",
                             children: []
                         },
                     ]
                 },
                 {
-                    id: "6",
+                    id: "n-6",
                     title: "Child",
                     children: []
                 },

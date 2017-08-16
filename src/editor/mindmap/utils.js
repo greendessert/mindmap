@@ -1,3 +1,3 @@
 export function getLineId(parent, child){
-    return `(${parent.id})-(${child.id})`
+    return `link-${parent.id}-${child.id}`
 }
