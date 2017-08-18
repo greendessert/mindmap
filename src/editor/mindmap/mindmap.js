@@ -18,6 +18,7 @@ export const MindMapMixIn = {
             mindmap: {  }, // After Interpolation
             lines: [ ], // Vue instances
             activeNode: null,
+            canvas: null
         }
     },
     computed: {
@@ -27,6 +28,7 @@ export const MindMapMixIn = {
     },
     mounted(){
         this.bindKeys()
+        this.canvas = this.$refs["canvas"]
     },
     methods: {
         draw(){
@@ -39,8 +41,8 @@ export const MindMapMixIn = {
             this.mindmap = interpolateNodes(this.mindmapData, this)
             this.lines = interpolateLines(this.mindmap, this)
 
-            rightLayout(this.mindmap)
-            // lineLayout(this.mindmap)
+            this.updateLayout()
+            this.applyLayout()
 
             this.updateFrame()
             this.drawNodes()
@@ -49,16 +51,19 @@ export const MindMapMixIn = {
         drawNodes(){
             for(let node of this.nodes){
                 !node.$el ? node.$mount() : null
-                this.$el.appendChild(node.$el)
+                this.canvas.appendChild(node.$el)
             }
         },
         updateLayout(){
             rightLayout(this.mindmap)
         },
+        applyLayout(){
+            this.mindmap.applyLayout()
+        },
         drawLines(){
             for(let line of this.lines){
                 !line.$el ? line.$mount() : null
-                this.$el.appendChild(line.$el)
+                this.canvas.appendChild(line.$el)
             }
         },
         updateFrame(){
@@ -81,7 +86,7 @@ export const MindMapMixIn = {
         nodeClick(node){
             this.activeNode = node
         },
-        insertChild(parentNode, data){
+        async insertChild(parentNode, data){
             let newChildNode = new Node({
                 data: {
                     id: `node-${_.uniqueId()}`,
@@ -102,15 +107,25 @@ export const MindMapMixIn = {
             parentNode.lines.push(newLine)
             
             this.activeNode = newChildNode
+
             
             this.updateLayout()
-            this.updateFrame()
+
+            newLine.c_x1 = parentNode.c_x+parentNode.width
+            newLine.c_y1 = parentNode.c_y+(parentNode.height/2)
+            newLine.c_x2 = newChildNode.x
+            newLine.c_y2 = newChildNode.y+(newChildNode.height/2)
+            newChildNode.c_x = newChildNode.x
+            newChildNode.c_y = newChildNode.y
             
             newChildNode.$mount()
             newLine.$mount()
             
-            this.$el.appendChild(newChildNode.$el)
-            this.$el.appendChild(newLine.$el)
+            this.canvas.appendChild(newChildNode.$el)
+            this.canvas.appendChild(newLine.$el)
+
+            this.mindmap.applyLayout()
+            this.updateFrame()
 
         },
         removeNode(){
@@ -119,6 +134,7 @@ export const MindMapMixIn = {
             this.activeNode = parentNode
 
             this.updateLayout()
+            this.mindmap.applyLayout()
             this.updateFrame()
         },
         insertSibling(){

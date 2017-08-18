@@ -10,6 +10,7 @@
     import * as _ from 'lodash'
     import * as d3 from "d3"
     import bluebird from 'bluebird'
+    const SVG = require("svg.js")
     export default {
         data(){
             return {
@@ -26,6 +27,7 @@
                 c_y: 0,
 
                 animating: false,
+                animations: [],
 
                 animatable: true,
                 animateAttr: ["x", "y"]
@@ -70,16 +72,47 @@
         },
         methods: {
             async animate(){
-                this.animating = true
+                /**
+                    Animate Function should transfor the current state to c_style to style 
+                */
+                let animationId = _.uniqueId()
+                this.animations.push(animationId)
                 let rect = d3.select(`#${this.rectId}`)
                 let text = d3.select(`#${this.textId}`)
-                let rectAnimation = new Promise((resolve)=>rect.transition().attr("transform", this.style.rectTransform).on('end', resolve))
-                let textAnimation = new Promise((resolve)=>text.transition().attr("transform", this.style.textTransform).on('end', resolve))
+                let rectAnimation = new Promise((resolve)=>
+                    rect
+                    .transition()
+                    .duration(300)
+                    .attr("transform", this.style.rectTransform)
+                    .on('end', resolve))
+                let textAnimation = new Promise((resolve)=>
+                    text
+                    .transition()
+                    .duration(300)
+                    .attr("transform", this.style.textTransform)
+                    .on('end', resolve))
                 await bluebird.all([rectAnimation, textAnimation])
-                this.animating = false
+                this.animations = this.animations.slice(this.animations.indexOf(animationId)+1, this.animations.length)
+            },
+            async animate2(){
+                let animationId = _.uniqueId()
+                this.animations.push(animationId)
+                let rect = SVG.adopt(document.getElementById(`${this.rectId}`))
+                let text = SVG.adopt(document.getElementById(`${this.textId}`))
+                let rectAnimation = new Promise((resolve)=>
+                    rect
+                    .animate()
+                    .attr({ transform: this.style.rectTransform })
+                    )
+                let textAnimation = new Promise((resolve)=>
+                    rect
+                    .animate()
+                    .attr({ transform: this.style.rectTransform })
+                    )
+                await bluebird.all([rectAnimation, textAnimation])
+                this.animations = this.animations.slice(this.animations.indexOf(animationId)+1, this.animations.length)
             },
             click(){
-                console.log(`Clicked On ${this.id}`)
                 this.$parent.nodeClick(this)
             },
             deleteChild(child){
@@ -93,7 +126,13 @@
                 child.$destroy()
                 line.$destroy()
             },
-            async layoutUpdated(){
+            async applyLayout(){
+                for(let child of this.children){
+                    child.applyLayout()
+                }
+                for(let line of this.lines){
+                    line.applyLayout()
+                }
                 if(this.$el && this.animatable){
                     try {
                         await this.animate()
@@ -101,7 +140,7 @@
                         console.log(err)
                     }
                 }
-                if(!this.animating){
+                if(!this.animations.length){
                     this.animateAttr.map((attr)=>{
                         this["c_"+attr] = this[attr]
                     })
@@ -124,14 +163,6 @@
             fill: white;
         }
     }
-    // rect {
-    //     transition: transform 0.3s;
-    // }
-
-    // text {
-    //     transition: transform 0.3s;
-    // }
-
 }
 
 .node.active {

@@ -84,7 +84,6 @@ export default function rightLayout(mindmap){
             root.y = offsetY + (root.totalHeight/2) - (blockWidth/2)
         }
         if(!root.children || !root.children.length) {
-            root.layoutUpdated()
             return
         }
         root.children.reduce((heightSum, child) => {
@@ -92,18 +91,17 @@ export default function rightLayout(mindmap){
 
             // Assign Line Coordinates
             let line = _.find(root.lines, {id: utils.getLineId(root, child)})
+
             line.x1 = root.x + root.width
             line.y1 = root.y + (root.height/2)
             line.x2 = child.x
             line.y2 = child.y + (child.height/2)
+            
             line.parentNode = root
             line.childNode = root
-
-            line.layoutUpdated()
             
             return heightSum + child.totalHeight
         }, 0)
-        root.layoutUpdated()
     }
     
     return mapRoot

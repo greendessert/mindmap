@@ -1,12 +1,12 @@
 <template>
     <g class="line">
-        <path :id="pathId" :d="currentPathDef">
-        </path>
+        <path :id="pathId" :d="currentPathDef"></path>
     </g>
 </template>
 
 <script>
     import * as d3 from "d3"
+    import * as _ from "lodash"
     export default {
         data(){
             return {
@@ -25,9 +25,10 @@
                 childNode: null,
 
                 animating: false,
+                animations: [],
 
                 animatable: true,
-                animateAttr: ["x1", "y1", "x2", "y2"]
+                animateAttr: ["x1", "y1", "x2", "y2"],
             }
         },
         computed: {
@@ -41,20 +42,20 @@
                 return `${this.id}-path`
             }
         },
-        beforeMount(){
-            // Layout update must happen before $mount
-            this.animateAttr.map((attr)=>{
-                this["c_"+attr] = this[attr]
-            })
-        },
         methods: {
-            async animate(){   
-                this.animating = true
+            async animate(){
+                let animationId = _.uniqueId()
+                this.animations.push(animationId)   
                 let path = d3.select(`#${this.pathId}`)
-                await new Promise((resolve)=>path.transition().attr("d", this.pathDef).on('end', resolve))
-                this.animating = false
+                await new Promise((resolve)=>
+                    path
+                    .transition()
+                    .duration(300)
+                    .attr("d", this.pathDef)
+                    .on('end', resolve))
+                this.animations = this.animations.slice(this.animations.indexOf(animationId)+1, this.animations.length)
             },
-            async layoutUpdated(){
+            async applyLayout(){
                 if(this.$el && this.animatable){
                     try{
                         await this.animate()
@@ -62,7 +63,7 @@
                         console.log(err)
                     }
                 }
-                if(!this.animating){
+                if(!this.animations.length){
                     this.animateAttr.map((attr)=>{
                         this["c_"+attr] = this[attr]
                     })
@@ -73,36 +74,6 @@
             this.$parent.$el.removeChild(this.$el)
         }
     }
-
-    async function delay(ms){
-        return new Promise((resolve)=>setTimeout(resolve, ms))
-    }
-
-// startAnimate: (function(){
-//     let frames = 30
-//     let startTime
-//     let duration = 300
-//     let x1, y1, x2, y2 // Target Location
-//     let timer // Interval Timer
-//     return function(){
-//         // When called, update target location, startTime
-
-//         let nextFrame = ()=>{
-//             // Access current location
-//             let c_x1, c_y1, c_x2, c_y2 // Current Location
-//             // Calculate next frame
-//             let n_x1, n_y1, n_x2, n_y2 // Current Location
-//             // If current location is target position, return, invalidate timer
-
-//             // Else, Update current location
-
-//             console.log("Animateing")
-//         }
-        
-//         timer = setInterval(nextFrame, 1000/frames)
-//     }
-// })(),
-
 </script>
 
 
@@ -110,9 +81,9 @@
     .line {
         stroke: black;
         stroke-width: 1;
+    }
 
-        line {
-            transition: all 0.3s ease-in-out;
-        }
+    .run-animation {
+        transition: opacity 5s, transform 5s
     }
 </style>

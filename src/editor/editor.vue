@@ -1,6 +1,8 @@
 <template>
-  <svg class="mindmap" id="mindmap"xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
-  </svg>
+  <div class="mindmapWrapper">
+    <svg ref="canvas" class="mindmap" id="mindmap"xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+    </svg>
+  </div>
 </template>
 
 <script>
@@ -12,7 +14,8 @@ export default {
   data () {
     return {
       mindmapData,
-      rootId: "mindmap"
+      rootId: "mindmap",
+      canvas: null
     }
   },
   mounted(){
@@ -22,5 +25,11 @@ export default {
 </script>
 
 <style lang="scss">
+.mindmapWrapper {
+  position: absolute;
+}
 
+// .mindmap {
+//   position: relative;
+// }
 </style>
