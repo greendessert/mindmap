@@ -42,11 +42,11 @@ export const MindMapMixIn = {
             this.lines = interpolateLines(this.mindmap, this)
 
             this.updateLayout()
-            this.applyLayout()
-
+            
             this.updateFrame()
             this.drawNodes()
             this.drawLines()
+            this.applyLayout()
         },
         drawNodes(){
             for(let node of this.nodes){
@@ -67,7 +67,7 @@ export const MindMapMixIn = {
             }
         },
         updateFrame(){
-            this.drawSVG = SVG(this.rootId).size(this.mindmap.totalWidth, this.mindmap.totalHeight)
+            // this.drawSVG = SVG(this.rootId).size(this.mindmap.totalWidth, this.mindmap.totalHeight)
         },
         bindKeys(){
             window.addEventListener("keydown", (evt)=>{

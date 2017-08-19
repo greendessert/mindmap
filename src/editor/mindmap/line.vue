@@ -1,7 +1,9 @@
 <template>
-    <g class="line">
-        <path :id="pathId" :d="currentPathDef"></path>
-    </g>
+    <div class="lineWrapper" :style="c_style.transform">
+        <svg :width="c_width" :height="c_height" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+            <path  class="line" :id="pathId" :d="d" :stroke-width="strokeWidth"></path>
+        </svg>
+    </div>
 </template>
 
 <script>
@@ -21,6 +23,15 @@
                 c_x2: 0,
                 c_y2: 0,
 
+                d: "",
+                c_width: 0,
+                c_height: 0,
+                c_style: {
+                    transform: "scale(1, 1)"
+                },
+
+                strokeWidth: 1,
+
                 parentNode: null,
                 childNode: null,
 
@@ -33,40 +44,50 @@
         },
         computed: {
             pathDef(){
-                return `M${this.x1},${this.y1} L${this.x2},${this.y2}`
-            },
-            currentPathDef(){
-                return `M${this.c_x1},${this.c_y1} L${this.c_x2},${this.c_y2}`
+                return `M${this.x1-this.x},${(this.y1-this.y) || this.strokeWidth/2} L${this.x2-this.x},${this.y2-this.y || this.strokeWidth/2}`
             },
             pathId(){
                 return `${this.id}-path`
+            },
+            x(){
+                return Math.min(this.x1, this.x2)
+            },
+            y(){
+                return Math.min(this.y1, this.y2)
+            },
+            // width(){
+            //     return Math.abs(this.x1 - this.x2)
+            // },
+            // height(){
+            //     return Math.abs(this.y1 - this.y2) || this.strokeWidth
+            // },
+            style(){
+                return {
+                    position: { left: `${this.x}px`, top: `${this.y}px` },
+                    transform: { transform: `translate3d(${this.x}px, ${this.y}px, 0px)` },
+                }
             }
         },
         methods: {
             async animate(){
-                let animationId = _.uniqueId()
-                this.animations.push(animationId)   
-                let path = d3.select(`#${this.pathId}`)
-                await new Promise((resolve)=>
-                    path
-                    .transition()
-                    .duration(300)
-                    .attr("d", this.pathDef)
-                    .on('end', resolve))
-                this.animations = this.animations.slice(this.animations.indexOf(animationId)+1, this.animations.length)
+
             },
             async applyLayout(){
-                if(this.$el && this.animatable){
-                    try{
-                        await this.animate()
-                    } catch(err){
-                        console.log(err)
-                    }
+                // debugger
+                this.$el.classList.remove("line-animation")
+                this.d = `M${this.x1-this.x},${(this.y1-this.y) || this.strokeWidth/2} L${this.x2-this.x},${this.y2-this.y || this.strokeWidth/2}`
+                let newWidth = Math.abs(this.x1 - this.x2)
+                let newHeight = Math.abs(this.y1 - this.y2) || this.strokeWidth
+                this.c_style.transform = {
+                    transform: `translate3d(${this.x}px, ${this.y}px, 0px) scale(${this.c_width/newWidth}, ${this.c_height/newHeight})`
                 }
-                if(!this.animations.length){
-                    this.animateAttr.map((attr)=>{
-                        this["c_"+attr] = this[attr]
-                    })
+                this.c_width = newWidth
+                this.c_height = newHeight
+                await new Promise((resolve)=>setTimeout(resolve, 100))
+                this.$el.classList.add("line-animation")
+
+                this.c_style.transform = {
+                    transform: `translate3d(${this.x}px, ${this.y}px, 0px) scale(1, 1)`
                 }
             }
         },
@@ -80,10 +101,23 @@
 <style lang="scss">
     .line {
         stroke: black;
-        stroke-width: 1;
+        // stroke-width: 10;
     }
 
-    .run-animation {
-        transition: opacity 5s, transform 5s
+    .line-animation {
+        transition: all 0.5s;
+    }
+
+    .lineWrapper {
+        position: absolute;
+        transition: transform 0.3s;
+        svg {
+            position: absolute;
+            transition: all 0.3s;
+        }
+    }
+
+    .line {
+        position: relative;
     }
 </style>

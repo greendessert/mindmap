@@ -1,7 +1,7 @@
 <template>
   <div class="mindmapWrapper">
-    <svg ref="canvas" class="mindmap" id="mindmap"xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
-    </svg>
+    <div ref="canvas" class="mindmap" id="mindmap">
+    </div>
   </div>
 </template>
 
@@ -27,6 +27,21 @@ export default {
 <style lang="scss">
 .mindmapWrapper {
   position: absolute;
+  // animation: a 3s infinite;
+}
+
+@keyframes a {
+  0% {
+    transform: scale(0)
+  }
+
+  50% {
+    transform: scale(1)
+  }
+
+  100% {
+    transform: scale(0)
+  }
 }
 
 // .mindmap {
