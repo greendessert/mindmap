@@ -79,15 +79,17 @@
                 let newWidth = Math.abs(this.x1 - this.x2)
                 let newHeight = Math.abs(this.y1 - this.y2) || this.strokeWidth
                 this.c_style.transform = {
-                    transform: `translate3d(${this.x}px, ${this.y}px, 0px) scale(${this.c_width/newWidth}, ${this.c_height/newHeight})`
+                    transform: `scale(${this.c_width/newWidth}, ${this.c_height/newHeight})`
                 }
                 this.c_width = newWidth
                 this.c_height = newHeight
-                await new Promise((resolve)=>setTimeout(resolve, 100))
+                await new Promise((resolve)=>requestAnimationFrame(resolve))
                 this.$el.classList.add("line-animation")
 
                 this.c_style.transform = {
-                    transform: `translate3d(${this.x}px, ${this.y}px, 0px) scale(1, 1)`
+                    left: `${this.x}px`,
+                    top: `${this.y}px`,
+                    transform: `scale(1, 1)`
                 }
             }
         },
@@ -99,21 +101,18 @@
 
 
 <style lang="scss">
-    .line {
-        stroke: black;
-        // stroke-width: 10;
-    }
-
     .line-animation {
         transition: all 0.5s;
     }
 
+    .line {
+        stroke: black;
+    }
+
     .lineWrapper {
         position: absolute;
-        transition: transform 0.3s;
         svg {
             position: absolute;
-            transition: all 0.3s;
         }
     }
 
