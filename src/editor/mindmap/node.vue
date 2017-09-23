@@ -124,14 +124,6 @@
             fill: white;
         }
     }
-    // rect {
-    //     transition: transform 0.3s;
-    // }
-
-    // text {
-    //     transition: transform 0.3s;
-    // }
-
 }
 
 .node.active {
