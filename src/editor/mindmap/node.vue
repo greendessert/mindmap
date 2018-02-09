@@ -1,7 +1,7 @@
 <template>
-  <g :class="{active: active}" class="node" @click="click">
+  <g :id="id" :class="{active: active}" class="node" @click="click" @dbclick="dbclick">
     <rect :id="rectId" :width="width" :height="height"></rect>
-    <text :id="textId" font-size="18">{{title}}</text>
+    <text :id="textId" font-size="18" transform="translate(5, 55)">{{title}}</text>
   </g>
 </template>
 
@@ -43,10 +43,12 @@
             text(){
                 return d3.select(`#${this.textId}`)
             },
+            node(){
+                return d3.select(`#${this.id}`)
+            },
             style(){
                 return {
-                    rectTransform: `translate(${this.x}, ${this.y})`,
-                    textTransform: `translate(${this.x+5}, ${this.y+55})`
+                    nodeTransform: `translate(${this.x}, ${this.y})`
                 }
             }
         },
@@ -65,7 +67,14 @@
         },
         methods: {
             click(){
-                this.$parent.nodeClick(this)
+                if(this.$parent.activeNode === this){
+                    this.dbclick()
+                } else {
+                    this.$parent.nodeClick(this)
+                }
+            },
+            dbclick(){
+                console.log(this.$el.transform)
             },
             deleteChild(child){
                 let index = this.children.indexOf(child)
@@ -79,10 +88,7 @@
                 line.$destroy()
             },
             updatePosition(){
-                if(this.x!==-1 && this.y!==-1){
-                    this.rect.transition().attr("transform", this.style.rectTransform)
-                    this.text.transition().attr("transform", this.style.textTransform)
-                }
+                this.node.transition().attr("transform", this.style.nodeTransform)
             }
         }
     }
