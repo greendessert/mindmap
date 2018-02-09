@@ -78,8 +78,6 @@
                 child.$destroy()
                 line.$destroy()
             },
-            async layoutUpdated(){
-            },
             updatePosition(){
                 if(this.x!==-1 && this.y!==-1){
                     this.rect.transition().attr("transform", this.style.rectTransform)

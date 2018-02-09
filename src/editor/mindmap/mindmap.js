@@ -86,8 +86,7 @@ export const MindMapMixIn = {
                 data: {
                     id: `node-${_.uniqueId()}`,
                     title: "Node #"+this.nodes.length,
-                    children: [],
-                    parent: this
+                    children: []
                 }
             })
             newChildNode.$parent = this
@@ -103,15 +102,16 @@ export const MindMapMixIn = {
             
             this.activeNode = newChildNode
             
+            newChildNode.$mount()
+            newLine.$mount()
+            this.$el.appendChild(newChildNode.$el)
+            newChildNode.updatePosition()
+            this.$el.appendChild(newLine.$el)
+            newLine.updatePosition()
+
             this.updateLayout()
             this.updateFrame()
             
-            newChildNode.$mount()
-            newLine.$mount()
-            
-            this.$el.appendChild(newChildNode.$el)
-            this.$el.appendChild(newLine.$el)
-
         },
         removeNode(){
             let parentNode = getParentNode(this.mindmap, this.activeNode)

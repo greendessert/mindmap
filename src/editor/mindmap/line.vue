@@ -1,6 +1,6 @@
 <template>
     <g class="line">
-        <path :id="pathId" :d="currentPathDef">
+        <path :id="pathId">
         </path>
     </g>
 </template>
@@ -16,11 +16,6 @@
                 x2: 0,
                 y2: 0,
 
-                c_x1: 0,
-                c_y1: 0,
-                c_x2: 0,
-                c_y2: 0,
-
                 parentNode: null,
                 childNode: null,
 
@@ -34,39 +29,22 @@
             pathDef(){
                 return `M${this.x1},${this.y1} L${this.x2},${this.y2}`
             },
-            currentPathDef(){
-                return `M${this.c_x1},${this.c_y1} L${this.c_x2},${this.c_y2}`
-            },
             pathId(){
                 return `${this.id}-path`
+            },
+            path(){
+                return d3.select(`#${this.pathId}`)
             }
         },
-        beforeMount(){
-            // Layout update must happen before $mount
-            this.animateAttr.map((attr)=>{
-                this["c_"+attr] = this[attr]
-            })
+        watch: {
+            x1(){ this.updatePosition() },
+            y1(){ this.updatePosition() },
+            x2(){ this.updatePosition() },
+            y2(){ this.updatePosition() },
         },
         methods: {
-            async animate(){   
-                this.animating = true
-                let path = d3.select(`#${this.pathId}`)
-                await new Promise((resolve)=>path.transition().attr("d", this.pathDef).on('end', resolve))
-                this.animating = false
-            },
-            async layoutUpdated(){
-                if(this.$el && this.animatable){
-                    try{
-                        await this.animate()
-                    } catch(err){
-                        console.log(err)
-                    }
-                }
-                if(!this.animating){
-                    this.animateAttr.map((attr)=>{
-                        this["c_"+attr] = this[attr]
-                    })
-                }
+            updatePosition(){
+                this.path.transition().attr("d", this.pathDef)
             }
         },
         beforeDestroy(){
