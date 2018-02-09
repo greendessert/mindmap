@@ -1,7 +1,7 @@
 <template>
   <g :class="{active: active}" class="node" @click="click">
-    <rect :id="rectId" :width="width" :height="height" :transform="c_style.rectTransform"></rect>
-    <text :id="textId" font-size="18" :transform="c_style.textTransform">{{title}}</text>
+    <rect :id="rectId" :width="width" :height="height"></rect>
+    <text :id="textId" font-size="18">{{title}}</text>
   </g>
 </template>
 
@@ -20,15 +20,8 @@
                 totalWidth: 0,
                 lines: [],
 
-                x: 0,
-                y: 0,
-                c_x: 0,
-                c_y: 0,
-
-                animating: false,
-
-                animatable: true,
-                animateAttr: ["x", "y"],
+                x: -1,
+                y: -1,
 
                 height: 100,
                 width: 100
@@ -41,24 +34,29 @@
             rectId(){
                 return `${this.id}_rect`
             },
+            rect(){
+                return d3.select(`#${this.rectId}`)
+            },
             textId(){
                 return `${this.id}_text`
             },
-            
+            text(){
+                return d3.select(`#${this.textId}`)
+            },
             style(){
                 return {
                     rectTransform: `translate(${this.x}, ${this.y})`,
                     textTransform: `translate(${this.x+5}, ${this.y+55})`
                 }
-            },
-            c_style(){
-                return {
-                    rectTransform: `translate(${this.c_x}, ${this.c_y})`,
-                    textTransform: `translate(${this.c_x+5}, ${this.c_y+55})`
-                }
-            },
+            }
         },
-        mounted(){
+        watch: {
+            x(){
+                this.updatePosition()
+            },
+            y(){
+                this.updatePosition()
+            }
         },
         beforeDestroy(){
             this.lines.forEach((line)=>line.$destroy())
@@ -66,17 +64,7 @@
             this.$parent.$el.removeChild(this.$el)
         },
         methods: {
-            async animate(){
-                this.animating = true
-                let rect = d3.select(`#${this.rectId}`)
-                let text = d3.select(`#${this.textId}`)
-                let rectAnimation = new Promise((resolve)=>rect.transition().attr("transform", this.style.rectTransform).on('end', resolve))
-                let textAnimation = new Promise((resolve)=>text.transition().attr("transform", this.style.textTransform).on('end', resolve))
-                await bluebird.all([rectAnimation, textAnimation])
-                this.animating = false
-            },
             click(){
-                console.log(`Clicked On ${this.id}`)
                 this.$parent.nodeClick(this)
             },
             deleteChild(child){
@@ -91,17 +79,11 @@
                 line.$destroy()
             },
             async layoutUpdated(){
-                if(this.$el && this.animatable){
-                    try {
-                        await this.animate()
-                    } catch(err){
-                        console.log(err)
-                    }
-                }
-                if(!this.animating){
-                    this.animateAttr.map((attr)=>{
-                        this["c_"+attr] = this[attr]
-                    })
+            },
+            updatePosition(){
+                if(this.x!==-1 && this.y!==-1){
+                    this.rect.transition().attr("transform", this.style.rectTransform)
+                    this.text.transition().attr("transform", this.style.textTransform)
                 }
             }
         }

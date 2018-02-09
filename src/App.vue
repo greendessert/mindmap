@@ -5,13 +5,13 @@
 </template>
 
 <script>
-import Editor2 from './editor/editor2'
+import Editor from './editor/editor.js'
 import mindmapData from "./editor/mindmap/mindmapData.js"
 
 export default {
   name: 'app',
   mounted(){
-    new Editor2(mindmapData).mount("app")
+    new Editor(mindmapData).mount("app")
   }
 }
 </script>
