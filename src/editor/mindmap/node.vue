@@ -28,16 +28,13 @@
                 animating: false,
 
                 animatable: true,
-                animateAttr: ["x", "y"]
+                animateAttr: ["x", "y"],
+
+                height: 100,
+                width: 100
             }
         },
         computed: {
-            height(){
-                return 100
-            },
-            width(){
-                return 100
-            },
             active(){
                 return this.$parent.activeNode === this
             },
