@@ -86,17 +86,25 @@ export const MindMapMixIn = {
                 data: {
                     id: `node-${_.uniqueId()}`,
                     title: "Node #"+this.nodes.length,
-                    children: []
+                    children: [],
+                    x: parentNode.x,
+                    y: parentNode.y
                 }
             })
+            
             newChildNode.$parent = this
             parentNode.children.push(newChildNode)
 
             let newLine = new Line({
                 data: {
-                    id: utils.getLineId(parentNode, newChildNode)
+                    id: utils.getLineId(parentNode, newChildNode),
+                    x1: parentNode.x + parentNode.width,
+                    y1: parentNode.y + (parentNode.height / 2),
+                    x2: newChildNode.x + newChildNode.width,
+                    y2: newChildNode.y + (newChildNode.height / 2)
                 }
             })
+
             newLine.$parent = this
             parentNode.lines.push(newLine)
             

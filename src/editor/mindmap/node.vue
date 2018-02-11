@@ -20,8 +20,8 @@
                 totalWidth: 0,
                 lines: [],
 
-                x: -1,
-                y: -1,
+                x: 0,
+                y: 0,
 
                 height: 100,
                 width: 100
@@ -48,9 +48,12 @@
             },
             style(){
                 return {
-                    nodeTransform: `translate(${this.x}, ${this.y})`
+                    gTransform: `translate(${this.x}, ${this.y})`
                 }
             }
+        },
+        mounted(){
+            this.$el.setAttribute("transform", this.style.gTransform)
         },
         watch: {
             x(){
@@ -88,7 +91,7 @@
                 line.$destroy()
             },
             updatePosition(){
-                this.node.transition().attr("transform", this.style.nodeTransform)
+                this.node.transition().attr("transform", this.style.gTransform)
             }
         }
     }
