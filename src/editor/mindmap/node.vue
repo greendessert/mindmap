@@ -1,7 +1,10 @@
 <template>
-  <g :id="id" :class="{active: active}" class="node" @click="click" @dbclick="dbclick">
-    <rect :id="rectId" :width="width" :height="height"></rect>
+  <g class="mindmap-node" :id="id" :class="{active: active}" @click="click" @dbclick="dbclick">
+    <rect class="mindmap-node-rect" :id="rectId" :width="width" :height="height"></rect>
     <text :id="textId" font-size="18" transform="translate(5, 55)">{{title}}</text>
+    <foreignObject v-if="showInput" width="100" height="50" transform="translate(5, 35)">
+        <input type="text" @keyup.enter="onEnter($event)"/>
+    </foreignObject>
   </g>
 </template>
 
@@ -23,8 +26,10 @@
                 x: 0,
                 y: 0,
 
+                width: 100,
                 height: 100,
-                width: 100
+
+                showInput: false
             }
         },
         computed: {
@@ -46,6 +51,9 @@
             node(){
                 return d3.select(`#${this.id}`)
             },
+            nodeEl(){
+                return this.$el
+            },
             style(){
                 return {
                     gTransform: `translate(${this.x}, ${this.y})`
@@ -53,7 +61,7 @@
             }
         },
         mounted(){
-            this.$el.setAttribute("transform", this.style.gTransform)
+            this.nodeEl.setAttribute("transform", this.style.gTransform)
         },
         watch: {
             x(){
@@ -77,7 +85,7 @@
                 }
             },
             dbclick(){
-                console.log(this.$el.transform)
+                this.showInput = true
             },
             deleteChild(child){
                 let index = this.children.indexOf(child)
@@ -92,13 +100,18 @@
             },
             updatePosition(){
                 this.node.transition().attr("transform", this.style.gTransform)
+            },
+            onEnter(event){
+                event.stopPropagation()
+                this.title = event.target.value
+                this.showInput = false
             }
         }
     }
 </script>
 
 <style lang="scss">
-.node {
+.mindmap-node {
     fill: pink;
     cursor: pointer;
     text {
@@ -112,8 +125,8 @@
     }
 }
 
-.node.active {
-    rect {
+.mindmap-node.active {
+    .mindmap-node-rect {
         fill: yellow;
     }
 

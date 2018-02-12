@@ -6,12 +6,11 @@
 
 <script>
 import Editor from './editor/editor.js'
-import mindmapData from "./editor/mindmap/mindmapData.js"
 
 export default {
   name: 'app',
   mounted(){
-    new Editor(mindmapData).mount("app")
+    new Editor().mount("app")
   }
 }
 </script>

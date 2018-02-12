@@ -34,13 +34,12 @@ export const MindMapMixIn = {
             this.redraw()
         },
         redraw(){
-            document.getElementById(this.rootId).innerHTML=""
+            document.getElementById(this.rootId).innerHTML = ""
 
             this.mindmap = interpolateNodes(this.mindmapData, this)
             this.lines = interpolateLines(this.mindmap, this)
 
             rightLayout(this.mindmap)
-            // lineLayout(this.mindmap)
 
             this.updateFrame()
             this.drawNodes()
@@ -65,15 +64,24 @@ export const MindMapMixIn = {
             this.drawSVG = SVG(this.rootId).size(this.mindmap.totalWidth, this.mindmap.totalHeight)
         },
         bindKeys(){
-            window.addEventListener("keydown", (evt)=>{
-                evt.preventDefault()
+            document.body.addEventListener("keydown", (evt)=>{
+                let keyList = ["Tab", "Enter", "Backspace"]
+                if(keyList.indexOf(evt.key)>=0){
+                    evt.preventDefault()
+                }
+            })
+            
+            document.body.addEventListener("keyup", (evt)=>{
                 if(evt.key === "Tab"){
+                    evt.preventDefault()
                     this.insertChild(this.activeNode)
                 }
                 if(evt.key === "Enter"){
+                    evt.preventDefault()
                     this.insertSibling()
                 }
                 if(evt.key === "Backspace"){
+                    evt.preventDefault()
                     this.removeNode()
                 }
             })

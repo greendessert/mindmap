@@ -1,14 +1,23 @@
 import Vue from 'vue'
 import EditorDef from "./editor.vue"
-const Editor = Vue.extend(EditorDef)
+import store from "./store"
+const EditorComp = Vue.extend(EditorDef)
 
-export default class Editor2 {
+let mindmapPlugin = {
+    install(Vue, options){
+        Vue.prototype.$mindmapStore = store
+    }
+}
+
+Vue.use(mindmapPlugin)
+
+export default class Editor {
     constructor(data){
         this.data = data
     }
 
     mount(id){
-        let editor = new Editor()
+        let editor = new EditorComp()
         editor.$mount()
         let cNode = document.getElementById(id)
         cNode.innerHTML = ""

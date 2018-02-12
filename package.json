@@ -15,7 +15,8 @@
     "sass-loader": "^6.0.6",
     "snapsvg": "^0.5.1",
     "svg.js": "^2.6.2",
-    "vue": "^2.3.3"
+    "vue": "^2.3.3",
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "css-loader": "^0.28.0",

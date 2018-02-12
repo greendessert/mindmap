@@ -5,7 +5,7 @@
 
 <script>
 import MindMap, { MindMapMixIn } from "./mindmap/mindmap.js"
-import mindmapData from "./mindmap/mindmapData.js"
+import mindmapData from "./data/mindmapData.js"
 
 export default {
   mixins: [ MindMapMixIn ],
