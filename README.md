@@ -4,7 +4,7 @@
 
 # Demo
 
-![Alt Text](https://github.com/MichaelDuo/mindmap/demo.gif)
+![Alt Text](https://github.com/MichaelDuo/mindmap/blob/master/demo.gif)
 
 ## Build Setup
 
