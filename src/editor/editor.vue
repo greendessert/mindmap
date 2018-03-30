@@ -1,5 +1,5 @@
 <template>
-  <svg class="mindmap" id="mindmap" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+  <svg class="mindmap" :id="rootId" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
   </svg>
 </template>
 

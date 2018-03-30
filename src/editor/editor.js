@@ -5,7 +5,7 @@ const EditorComp = Vue.extend(EditorDef)
 
 let mindmapPlugin = {
     install(Vue, options){
-        Vue.prototype.$mindmapStore = store
+        Vue.prototype.$mStore = store
     }
 }
 
