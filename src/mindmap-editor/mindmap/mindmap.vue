@@ -1,18 +1,26 @@
 <template>
-  <svg class="mindmap" :id="rootId" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
-  </svg>
+    <svg class="mindmap" :id="rootId" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" >
+    </svg>
 </template>
 
 <script>
-import MindMap, { MindMapMixIn } from "./mindmap/mindmap.js"
-import mindmapData from "./data/mindmapData.js"
+import _ from "lodash"
+import rightLayout from './layouts/right-layout'
+import Vue from 'vue'
+const SVG = require("svg.js")
+import nodeDef from './node.vue'
+const Node = Vue.extend(nodeDef)
+import lineDef from './line.vue'
+const Line = Vue.extend(lineDef)
+import * as utils from './utils'
+
+import mindmapData from "../data/mindmapData.js"
 
 export default {
-    mixins: [ MindMapMixIn ],
-    data () {
+    data(){
         return {
-            mindmapData,
             rootId: "mindmap",
+            mindmapData: mindmapData,
             drawSVG: ()=>{  },
             mindmap: {  }, // After Interpolation
             lines: [ ], // Vue instances
@@ -21,6 +29,7 @@ export default {
     },
     mounted(){
         this.bindKeys()
+        this.draw()
     },
     methods: {
         draw(){
@@ -131,9 +140,6 @@ export default {
         insertSibling(){
             let parentNode = getParentNode(this.$mStore.state.mindmap, this.activeNode)
             parentNode ? this.insertChild(parentNode) : null
-        },
-        ready(){
-            this.draw()
         }
     }
 }

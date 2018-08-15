@@ -7,8 +7,6 @@ import lineDef from './mindmap/line.vue'
 const Line = Vue.extend(lineDef)
 import * as utils from './mindmap/utils'
 
-import mindmapData from "./data/mindmapData.js"
-
 Vue.use(Vuex)
 
 const store = new Vuex.Store({

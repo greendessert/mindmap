@@ -1,17 +1,15 @@
 <template>
   <div id="app">
-    Loading...
+    <MindmapEditor/>
   </div>
 </template>
 
 <script>
-import Editor from './editor/editor.js'
+import MindmapEditor from './mindmap-editor'
 
 export default {
   name: 'app',
-  mounted(){
-    new Editor().mount("app")
-  }
+  components: { MindmapEditor }
 }
 </script>
 
